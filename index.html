@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Planner Pro + Budget Tracker</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400..700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="manifest" href="manifest.json" />
+<meta name="theme-color" content="#4f46e5" />
+</head>
+<body>
+
+<!-- ===== LOADING OVERLAY ===== -->
+<div id="loadingOverlay">
+  <div class="loader-container">
+    <div class="loader-particles" id="loaderParticles"></div>
+    <div class="loader-glow-ring"></div>
+    <div class="loader-logo-wrapper">
+      <div class="loader-logo" id="loaderLogo"><i class="fas fa-clipboard-list"></i></div>
+      <div class="loader-ring-progress" id="loaderRingProgress"></div>
+    </div>
+    <div class="loader-text-wrapper">
+      <div class="loader-name" id="loaderName">Planner Pro</div>
+      <div class="loader-subtitle" id="loaderSubtitle">Loading...</div>
+    </div>
+    <div class="loader-progress-wrap">
+      <div class="loader-progress-bar" id="loaderProgressBar"></div>
+    </div>
+    <div class="loader-progress-text" id="loaderProgressText">0%</div>
+  </div>
+</div>
+
+<!-- ===== SIDEBAR ===== -->
+<aside class="sidebar" id="sidebar">
+  <button class="close-sidebar-btn" id="closeSidebarBtn"><i class="fas fa-times"></i></button>
+  <div class="sidebar-brand"><i class="fas fa-clipboard-list"></i><span>Planner Pro</span></div>
+  <nav class="sidebar-nav">
+    <button class="sidebar-btn active" data-mode="dashboard"><i class="fas fa-chart-pie"></i><span>Dashboard</span></button>
+    <button class="sidebar-btn" data-mode="study"><i class="fas fa-book"></i><span>Belajar & Tugas</span></button>
+    <button class="sidebar-btn" data-mode="workout"><i class="fas fa-dumbbell"></i><span>Workout</span></button>
+    <button class="sidebar-btn" data-mode="saving"><i class="fas fa-piggy-bank"></i><span>Nabung</span></button>
+    <button class="sidebar-btn" data-mode="donghua"><i class="fas fa-film"></i><span>Donghua</span></button>
+    <button class="sidebar-btn" data-mode="chart"><i class="fas fa-chart-pie"></i><span>Grafik</span></button>
+    <button class="sidebar-btn" data-mode="budget"><i class="fas fa-wallet"></i><span>Budget</span></button>
+  </nav>
+  <div class="sidebar-footer">
+    <!-- Hanya satu tombol toggle tema -->
+    <button class="icon-btn" id="themeToggle" title="Ganti tema"><i class="fas fa-sun"></i></button>
+  </div>
+</aside>
+<div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+<!-- ===== MAIN WRAPPER ===== -->
+<div class="main-wrapper" id="mainWrapper">
+  <header class="topbar">
+    <button class="icon-btn hamburger" id="hamburgerBtn"><i class="fas fa-bars"></i></button>
+    <h2 id="modeTitle"><i class="fas fa-chart-pie"></i> Dashboard</h2>
+    <button class="icon-btn" id="toggleAiPanel" title="AI Assistant"><i class="fas fa-robot"></i></button>
+  </header>
+
+  <main class="container">
+
+    <!-- PANEL DASHBOARD -->
+    <section class="mode-panel active" id="panelDashboard">
+      <div class="dashboard-greeting">
+        <div class="greeting-text">Selamat datang, <strong>Planner</strong> ✨</div>
+        <div class="greeting-date" id="greetingDate"></div>
+      </div>
+      <div class="dashboard-quick-actions">
+        <button class="quick-btn primary" onclick="switchMode('study')"><i class="fas fa-plus"></i> Tugas Baru</button>
+        <button class="quick-btn" onclick="switchMode('workout')"><i class="fas fa-dumbbell"></i> Workout</button>
+        <button class="quick-btn" onclick="switchMode('donghua')"><i class="fas fa-film"></i> Donghua</button>
+        <button class="quick-btn" onclick="switchMode('saving')"><i class="fas fa-piggy-bank"></i> Nabung</button>
+        <button class="quick-btn" onclick="resetDashboard()" style="background:var(--danger);color:#fff;"><i class="fas fa-trash"></i> Reset Dashboard</button>
+      </div>
+      <div class="dashboard-targets" id="dashboardTargets"></div>
+      <div class="dashboard-grid" id="dashboardGrid"></div>
+      <div class="dashboard-recent">
+        <div class="recent-title"><i class="fas fa-clock"></i> Aktivitas Terakhir</div>
+        <ul class="recent-list" id="recentList">
+          <li style="color:var(--text3);">Belum ada aktivitas</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- PANEL BELAJAR -->
+    <section class="mode-panel" id="panelStudy">
+      <div class="study-stats">
+        <div class="stat-card"><span class="stat-icon"><i class="fas fa-book"></i></span><div><span class="stat-value" id="totalSubjects">0</span><span class="stat-label">Mata Pelajaran</span></div></div>
+        <div class="stat-card"><span class="stat-icon"><i class="fas fa-tasks"></i></span><div><span class="stat-value" id="totalTasks">0</span><span class="stat-label">Total Tugas</span></div></div>
+        <div class="stat-card"><span class="stat-icon"><i class="fas fa-check-circle"></i></span><div><span class="stat-value" id="doneTasks">0</span><span class="stat-label">Tugas Selesai</span></div></div>
+        <div class="stat-card"><span class="stat-icon"><i class="fas fa-clock"></i></span><div><span class="stat-value" id="studyHours">0</span><span class="stat-label">Jam Belajar</span></div></div>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <h3><i class="fas fa-calendar-alt"></i> Jadwal Pelajaran</h3>
+          <div style="display:flex;flex-wrap:wrap;gap:8px;">
+            <button class="btn btn-primary btn-sm" onclick="openStudyForm()"><i class="fas fa-plus"></i> Tambah</button>
+            <button class="btn btn-ghost btn-sm" onclick="exportStudySchedule()"><i class="fas fa-download"></i> Export</button>
+            <button class="btn btn-ghost btn-sm" onclick="resetStudy()" style="color:var(--danger);"><i class="fas fa-trash"></i> Reset</button>
+          </div>
+        </div>
+        <div class="table-wrapper">
+          <table id="studyTable"><thead><tr><th>Jam</th><th>Senin</th><th>Selasa</th><th>Rabu</th><th>Kamis</th><th>Jumat</th></tr></thead><tbody id="studyTableBody"></tbody></table>
+        </div>
+      </div>
+      <div class="card" style="margin-top:16px;">
+        <div class="card-header">
+          <h3><i class="fas fa-tasks"></i> Tugas / PR</h3>
+          <div style="display:flex;flex-wrap:wrap;gap:8px;">
+            <button class="btn btn-primary btn-sm" onclick="addStudyTask()"><i class="fas fa-plus"></i> Tambah</button>
+            <button class="btn btn-ghost btn-sm filter-btn active" data-filter="all" onclick="filterTasks('all')">Semua</button>
+            <button class="btn btn-ghost btn-sm filter-btn" data-filter="pending" onclick="filterTasks('pending')">Belum</button>
+            <button class="btn btn-ghost btn-sm filter-btn" data-filter="done" onclick="filterTasks('done')">Selesai</button>
+            <button class="btn btn-ghost btn-sm" onclick="resetTasks()" style="color:var(--danger);"><i class="fas fa-trash"></i> Reset</button>
+          </div>
+        </div>
+        <div class="tugas-input-row">
+          <input id="studyTaskInput" class="input-tugas" placeholder="Tulis tugas baru..." />
+          <div class="input-tugas-icon-wrapper">
+            <i class="fas fa-book input-icon"></i>
+            <input id="taskSubject" class="input-tugas" placeholder="Nama Mapel..." list="subjectList" autocomplete="off" />
+          </div>
+          <datalist id="subjectList"></datalist>
+          <input type="date" id="taskDeadline" class="input-tugas" style="flex:0 0 auto;width:auto;min-width:150px;" />
+          <button class="btn btn-primary" onclick="addStudyTask()">Tambah</button>
+        </div>
+        <ul id="studyTaskList" class="tugas-list"></ul>
+      </div>
+      <div class="card" style="margin-top:16px;">
+        <div class="card-header">
+          <h3><i class="fas fa-sticky-note"></i> Catatan Belajar</h3>
+          <div style="display:flex;flex-wrap:wrap;gap:8px;">
+            <button class="btn btn-primary btn-sm" onclick="addNote()"><i class="fas fa-plus"></i> Tambah</button>
+            <button class="btn btn-ghost btn-sm" onclick="resetNotes()" style="color:var(--danger);"><i class="fas fa-trash"></i> Reset</button>
+          </div>
+        </div>
+        <div class="notes-grid" id="studyNotes"></div>
+      </div>
+    </section>
+
+    <!-- PANEL WORKOUT -->
+    <section class="mode-panel" id="panelWorkout">
+      <div class="workout-stats">
+        <div class="stat-card"><span class="stat-icon"><i class="fas fa-dumbbell"></i></span><div><span class="stat-value" id="totalWorkout">0</span><span class="stat-label">Total Latihan</span></div></div>
+        <div class="stat-card"><span class="stat-icon"><i class="fas fa-check-circle"></i></span><div><span class="stat-value" id="doneWorkout">0</span><span class="stat-label">Selesai Hari Ini</span></div></div>
+        <div class="stat-card"><span class="stat-icon"><i class="fas fa-fire"></i></span><div><span class="stat-value" id="workoutStreak">0</span><span class="stat-label">Streak (Hari)</span></div></div>
+        <div class="stat-card"><span class="stat-icon"><i class="fas fa-bolt"></i></span><div><span class="stat-value" id="totalVolume">0</span><span class="stat-label">Total Volume (kg)</span></div></div>
+        <div class="stat-card"><span class="stat-icon"><i class="fas fa-chart-bar"></i></span><div><span class="stat-value" id="weeklyProgress">0%</span><span class="stat-label">Progress Minggu Ini</span></div></div>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <h3><i class="fas fa-dumbbell"></i> Jadwal Latihan</h3>
+          <div style="display:flex;flex-wrap:wrap;gap:8px;">
+            <button class="btn btn-primary btn-sm" onclick="openWorkoutForm()"><i class="fas fa-plus"></i> Tambah</button>
+            <button class="btn btn-ghost btn-sm" onclick="exportWorkoutSchedule()"><i class="fas fa-download"></i> Export</button>
+            <button class="btn btn-ghost btn-sm" onclick="resetWorkout()" style="color:var(--danger);"><i class="fas fa-trash"></i> Reset</button>
+          </div>
+        </div>
+        <div class="calendar-bar" id="workoutCalendar">
+          <button class="day-btn active" data-day="SENIN">Sen</button>
+          <button class="day-btn" data-day="SELASA">Sel</button>
+          <button class="day-btn" data-day="RABU">Rab</button>
+          <button class="day-btn" data-day="KAMIS">Kam</button>
+          <button class="day-btn" data-day="JUMAT">Jum</button>
+          <button class="day-btn" data-day="SABTU">Sab</button>
+          <button class="day-btn" data-day="MINGGU">Min</button>
+        </div>
+        <div class="workout-grid" id="workoutGrid"></div>
+      </div>
+      <div class="card" style="margin-top:16px;">
+        <div class="card-header">
+          <h3><i class="fas fa-bullseye"></i> Muscle Group Focus</h3>
+          <div style="display:flex;flex-wrap:wrap;gap:8px;">
+            <button class="btn btn-primary btn-sm" onclick="addMuscleGroup()"><i class="fas fa-plus"></i> Tambah</button>
+            <button class="btn btn-ghost btn-sm" onclick="resetMuscleGroups()" style="color:var(--danger);"><i class="fas fa-trash"></i> Reset</button>
+          </div>
+        </div>
+        <div class="muscle-grid" id="muscleGrid"></div>
+      </div>
+      <div class="card" style="margin-top:16px;">
+        <div class="card-header"><h3><i class="fas fa-chart-bar"></i> Workout History (7 Hari Terakhir)</h3></div>
+        <div class="history-grid" id="workoutHistory"></div>
+      </div>
+    </section>
+
+    <!-- PANEL NABUNG -->
+    <section class="mode-panel" id="panelSaving">
+      <div class="card">
+        <div class="card-header">
+          <h3><i class="fas fa-money-bill-wave"></i> Target Tabungan</h3>
+          <div style="display:flex;flex-wrap:wrap;gap:8px;">
+            <button class="btn btn-primary btn-sm" onclick="openSavingForm()"><i class="fas fa-plus"></i> Tambah</button>
+            <button class="btn btn-ghost btn-sm" onclick="resetSaving()" style="color:var(--danger);"><i class="fas fa-trash"></i> Reset</button>
+          </div>
+        </div>
+        <div id="savingList" class="saving-grid"></div>
+      </div>
+    </section>
+
+    <!-- PANEL DONGHUA -->
+    <section class="mode-panel" id="panelDonghua">
+      <div class="donghua-wrapper">
+        <div class="donghua-header">
+          <span class="badge" id="pointDisplay" style="background:var(--primary);color:#fff;padding:6px 12px;border-radius:20px;"><i class="fas fa-star"></i> 0</span>
+          <button class="btn btn-ghost btn-sm" onclick="resetDonghua()" style="color:var(--danger);"><i class="fas fa-trash"></i> Reset</button>
+        </div>
+        <div class="donghua-stats-card">
+          <div class="stat-item"><div class="stat-number" id="statTotal">0</div><div class="stat-label">Total</div></div>
+          <div class="stat-item"><div class="stat-number" id="statWatching">0</div><div class="stat-label">Watching</div></div>
+          <div class="stat-item"><div class="stat-number" id="statFinished">0</div><div class="stat-label">Finished</div></div>
+          <div class="stat-item"><div class="stat-number" id="statWaiting">0</div><div class="stat-label">Waiting</div></div>
+        </div>
+        <div class="donghua-toolbar">
+          <div class="donghua-filters" id="filterGroup">
+            <button class="filter-btn active" data-filter="all">Semua</button>
+            <button class="filter-btn" data-filter="watching">Tonton</button>
+            <button class="filter-btn" data-filter="finished">Selesai</button>
+            <button class="filter-btn" data-filter="waiting">Tunggu</button>
+            <button class="filter-btn" data-filter="favorites"><i class="fas fa-heart"></i></button>
+          </div>
+          <div class="donghua-controls-right" style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;">
+            <input type="text" id="donghuaSearch" placeholder="Cari..." />
+            <select id="sortSelect">
+              <option value="title">Judul</option>
+              <option value="progress">Progress</option>
+              <option value="latest">Terbaru</option>
+              <option value="rating">Rating</option>
+            </select>
+            <label class="btn-hide"><input type="checkbox" id="hideFinished" /> Sembunyikan Selesai</label>
+            <button class="btn-add" id="openAddDonghuaBtn"><i class="fas fa-plus"></i> Tambah</button>
+          </div>
+        </div>
+        <div id="donghuaGrid" class="donghua-grid"></div>
+        <div id="emptyState" class="donghua-empty-state" style="display:none;">
+          <i class="fas fa-film"></i>
+          <h3>Belum Ada Donghua</h3>
+          <p>Mulai buat daftar tontonanmu.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- PANEL GRAFIK -->
+    <section class="mode-panel" id="panelChart">
+      <div class="card">
+        <div class="card-header">
+          <h3><i class="fas fa-chart-bar"></i> Grafik Statistik</h3>
+          <div style="display:flex;flex-wrap:wrap;gap:8px;">
+            <button class="btn btn-ghost btn-sm chart-tab active" data-chart="study-tasks"><i class="fas fa-tasks"></i> Tugas</button>
+            <button class="btn btn-ghost btn-sm chart-tab" data-chart="study-subjects"><i class="fas fa-book"></i> Mapel</button>
+            <button class="btn btn-ghost btn-sm chart-tab" data-chart="study-trend"><i class="fas fa-chart-line"></i> Tren</button>
+            <button class="btn btn-ghost btn-sm chart-tab" data-chart="workout-daily"><i class="fas fa-dumbbell"></i> Harian</button>
+            <button class="btn btn-ghost btn-sm chart-tab" data-chart="workout-volume"><i class="fas fa-bolt"></i> Volume</button>
+            <button class="btn btn-ghost btn-sm chart-tab" data-chart="workout-active"><i class="fas fa-bullseye"></i> Aktif</button>
+          </div>
+        </div>
+        <div class="chart-container"><canvas id="chartCanvas"></canvas></div>
+        <div id="chartDescription">Grafik tugas: selesai vs belum</div>
+      </div>
+    </section>
+
+    <!-- PANEL BUDGET TRACKER -->
+    <section class="mode-panel" id="panelBudget">
+      <div class="card">
+        <div class="card-header">
+          <h3><i class="fas fa-wallet"></i> Budget Tracker</h3>
+          <div style="display:flex;flex-wrap:wrap;gap:8px;">
+            <button class="btn btn-primary btn-sm" onclick="addBudgetEntry()"><i class="fas fa-plus"></i> Tambah Transaksi</button>
+            <button class="btn btn-ghost btn-sm" onclick="resetBudget()" style="color:var(--danger);"><i class="fas fa-trash"></i> Reset</button>
+          </div>
+        </div>
+        <div class="budget-summary" id="budgetSummary">
+          <span class="stat-icon"><i class="fas fa-coins"></i></span> Saldo: Rp 0
+        </div>
+        <div class="table-wrapper" style="margin-top:12px;">
+          <table>
+            <thead><tr><th>Tanggal</th><th>Keterangan</th><th>Jumlah</th><th>Tipe</th><th>Aksi</th></tr></thead>
+            <tbody id="budgetTableBody">
+              <tr><td colspan="5" style="text-align:center;color:var(--text3);">Belum ada transaksi.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<!-- AI PANEL -->
+<aside class="ai-panel" id="aiPanel">
+  <div class="ai-panel-header" style="display:flex;justify-content:space-between;align-items:center;padding:12px 16px;border-bottom:1px solid var(--border);">
+    <h3 style="font-size:1rem;margin:0;"><i class="fas fa-robot"></i> AI Assistant</h3>
+    <button class="icon-btn" id="closeAiPanel"><i class="fas fa-times"></i></button>
+  </div>
+  <div class="ai-chat-area" id="aiChatArea">
+    <div class="ai-message bot">
+      <i class="fas fa-robot"></i> Hai! Aku bisa bantu tambahin data. Contoh:
+      <ul style="margin:4px 0 0 14px;font-size:0.8rem;color:var(--text2);">
+        <li>"Tambah donghua Solo Leveling episode 12"</li>
+        <li>"Tambah tugas Matematika deadline besok"</li>
+        <li>"Jadwal Senin 07:00 Fisika"</li>
+        <li>"Target nabung beli sepatu 500000"</li>
+        <li>"Catat langkah 5000"</li>
+        <li>"Catat kalori 200"</li>
+        <li>"Tambah muscle group Push Up"</li>
+      </ul>
+    </div>
+  </div>
+  <div class="ai-input-area" style="display:flex;gap:8px;padding:12px 16px;border-top:1px solid var(--border);">
+    <input type="text" id="aiInput" placeholder="Ketik perintah..." style="flex:1;padding:10px 14px;border-radius:20px;border:1px solid var(--border);background:var(--surface2);color:var(--text);font-family:inherit;" />
+    <button class="btn btn-primary" onclick="processAICommand()"><i class="fas fa-paper-plane"></i></button>
+  </div>
+</aside>
+
+<!-- MODAL DONGHUA -->
+<div class="modal-overlay" id="donghuaModalOverlay">
+  <div class="modal modal-donghua" id="donghuaModalContent">
+    <h3 id="donghuaModalTitle"><i class="fas fa-film"></i> Tambah Donghua</h3>
+    <form id="donghuaForm">
+      <input type="hidden" id="donghuaEditId" />
+      <label>Judul (max 50)</label>
+      <input type="text" id="donghuaTitle" maxlength="50" placeholder="Nama donghua..." required />
+      <div style="display:flex;flex-wrap:wrap;gap:8px;">
+        <div style="flex:1;min-width:100px;"><label>Total Episode</label><input type="number" id="donghuaTotal" value="12" min="1" /></div>
+        <div style="flex:1;min-width:100px;"><label>Episode Saat Ini</label><input type="number" id="donghuaCurrent" value="0" min="0" /></div>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:8px;">
+        <div style="flex:1;min-width:100px;">
+          <label>Status</label>
+          <select id="donghuaStatus">
+            <option value="watching">Watching</option>
+            <option value="finished">Finished</option>
+            <option value="waiting">Waiting</option>
+          </select>
+        </div>
+        <div style="flex:1;min-width:100px;">
+          <label>Rating</label>
+          <select id="donghuaRating">
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5" selected>5</option>
+          </select>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;margin:8px 0;">
+        <input type="checkbox" id="donghuaFavorite" />
+        <label for="donghuaFavorite"><i class="fas fa-star"></i> Favorite</label>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-ghost" type="button" id="closeDonghuaModal"><i class="fas fa-times"></i> Batal</button>
+        <button class="btn btn-primary" type="submit" id="saveDonghuaBtn"><i class="fas fa-save"></i> Simpan</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- MODAL UMUM & TOAST -->
+<div class="modal-overlay" id="modalOverlay"><div class="modal" id="modalContent"></div></div>
+<div class="toast-container" id="toastContainer"></div>
+
+<script src="app.js"></script>
+</body>
+</html>
